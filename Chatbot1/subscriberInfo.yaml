@@ -1,0 +1,17 @@
+---
+subscribers:
+  - name: sirius-knowledge-connect
+    productcode: sirius
+    githubwiki: sirius-knowledge-connect
+    haswiki: yes
+    targetfolder: 
+  - name: capella
+    productcode: capella
+    githubwiki: capella-docs
+    haswiki: yes
+    targetfolder: 
+  - name: admiral
+    productcode: admiral
+    githubwiki: admiral
+    haswiki: yes
+    targetfolder: 
