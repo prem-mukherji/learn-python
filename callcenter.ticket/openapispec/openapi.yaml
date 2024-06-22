@@ -1,0 +1,170 @@
+openapi: 3.0.3
+info:
+  title: Call-Center Ticket App
+  version: 1.0.0
+  description: API to manage call-center tickets
+  contact:
+    name: premanshu
+    url: https://github.com/
+    email: premanshu.mukherji@gmail.com
+servers:
+  - url: someurl
+    variables:
+      host:
+        default: http://localhost:8080
+security:
+  - jwt: []
+paths:
+  /health/v1:
+    get:
+      description: Get the health of the platform provisioning API workload
+      operationId: getHealthV1
+      responses:
+        "200":
+          description: The platform provisioning API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                x-go-type: health.CheckerResult
+        "503":
+          description: The platform provisioning API is unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                x-go-type: health.CheckerResult
+  /tickets/v1:
+    parameters:
+      - $ref: "#/components/parameters/ticketState"
+    get:
+      description: Get the list of tickets based on the state, by default ACTIVE
+      operationId: getTicketsV1
+      responses:
+        "200":
+          description: List of tickets owned by the tenant
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TicketV1"
+        "404":
+          description: The ticket is not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetailV1"
+components:
+  schemas:
+    TicketType:
+      type: string
+      description: Defines a ticket state
+      enum:
+        - NEW
+        - REPAIR
+        - UNINSTALL
+      example: NEW
+    TicketState:
+      type: string
+      description: Defines a ticket state
+      enum:
+        - NEW
+        - ACTIVE
+        - ASSIGNED
+        - ONHOLD
+        - CLOSED
+        - ALL
+      example: NEW
+    TicketV1:
+      type: object
+      required:
+        - id
+        - spec
+      properties:
+        id:
+          type: string
+          readOnly: true
+          minLength: 1
+          example: "A001"
+          description: Ticket-Id is a unique identifier of a ticket that the orchestrator provisions; 
+        spec:
+          $ref: "#/components/schemas/TicketSpec"
+    TicketSpec:
+      type: object
+      description: Service Principal resource specification
+      properties:
+        code:
+          type: string
+          minLength: 1
+          description: Resource (Service principal) code
+        submittedBy:
+          type: string
+          minLength: 1
+          description: Agent Id the submitter
+          readOnly: true
+        submittedDate:
+          type: string
+          minLength: 1
+          format: date-time
+          description: date of creation of the ticket
+          readOnly: true
+        customerNumber:
+          type: string
+          minLength: 1
+          description: Customer contact number
+          readOnly: true
+        customerLocation:
+          type: string
+          minLength: 1
+          description: Location of the customer
+          readOnly: true
+        ticketType:
+          $ref: "#/components/schemas/TicketType"
+        status:
+          $ref: "#/components/schemas/TicketState"
+
+    ProblemDetailV1:
+      type: object
+      required:
+        - title
+        - status
+        - detail
+        - instance
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: Error title
+          example: Bad Request
+        status:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Error status code
+          example: 400
+        detail:
+          type: string
+          minLength: 1
+          description: Error details
+          example: Validation failed
+        instance:
+          type: string
+          minLength: 1
+          description: Error instance
+          example: /tenants/bookingtool/tickets/v1
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - code
+              - field
+            properties:
+              code:
+                type: string
+                example: ResourceAlreadyExists
+              field:
+                type: string
+                example: resource.name
+          description: Array of errors
